@@ -1,4 +1,4 @@
-name: Create Gist
+name: call-create-gist.yml
 
 on:
   workflow_dispatch:
