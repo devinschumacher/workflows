@@ -12,8 +12,9 @@ on:
         required: true
         type: string
     secrets:
-      GH_PAT_PROFESSOR_SERP:
+      GH_PAT:
         required: true
+        description: 'GitHub Personal Access Token with gist permissions'
 
 jobs:
   update-gist:
@@ -70,7 +71,7 @@ jobs:
           
       - name: Update existing gist
         env:
-          GITHUB_TOKEN: ${{ secrets.GH_PAT_PROFESSOR_SERP }}
+          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
         shell: bash
         run: |
           # Prepare the gist payload

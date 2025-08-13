@@ -17,8 +17,9 @@ on:
         required: true
         type: string
     secrets:
-      GH_PAT_PROFESSOR_SERP:
+      GH_PAT:
         required: true
+        description: 'GitHub Personal Access Token with gist and repo permissions'
 
 jobs:
   create-gist:
@@ -30,7 +31,7 @@ jobs:
         with:
           repository: ${{ inputs.repository }}
           ref: ${{ inputs.ref }}
-          token: ${{ secrets.GH_PAT_PROFESSOR_SERP }}
+          token: ${{ secrets.GH_PAT }}
         
       - name: Validate and read markdown file
         id: read_file
@@ -79,7 +80,7 @@ jobs:
           
       - name: Create or update gist
         env:
-          GITHUB_TOKEN: ${{ secrets.GH_PAT_PROFESSOR_SERP }}
+          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
         shell: bash
         run: |
           # Prepare the gist payload
