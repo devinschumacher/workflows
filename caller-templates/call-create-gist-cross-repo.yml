@@ -1,0 +1,31 @@
+name: Create Gist from External Repo
+
+on:
+  workflow_dispatch:
+    inputs:
+      repository:
+        description: 'Repository to get file from (owner/repo)'
+        required: true
+        type: string
+      ref:
+        description: 'Branch, tag, or commit SHA to checkout'
+        required: false
+        type: string
+        default: 'main'
+      file_path:
+        description: 'Relative path to the markdown file (.md) in the target repository'
+        required: true
+        type: string
+
+jobs:
+  create:
+    uses: devinschumacher/workflows/.github/workflows/create-gist-cross-repo.yml@main
+    with:
+      repository: ${{ github.event.inputs.repository }}
+      ref: ${{ github.event.inputs.ref }}
+      file_path: ${{ github.event.inputs.file_path }}
+    secrets:
+      # IMPORTANT: Replace GH_PAT with your secret name
+      # This secret must exist in your repository
+      # Go to Settings > Secrets and variables > Actions to add it
+      GH_PAT_PROFESSOR_SERP: ${{ secrets.GH_PAT }}
