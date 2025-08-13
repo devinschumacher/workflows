@@ -1,4 +1,4 @@
-name: Update Gist
+name: call-update-gist
 
 on:
   workflow_dispatch:
