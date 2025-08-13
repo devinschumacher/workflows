@@ -1,35 +1,32 @@
-# Reusable GitHub Actions Workflows
+# README
 
-This repository contains reusable GitHub Actions workflows that can be called from other repositories.
+The PAT needs these permissions:
 
-## Available Workflows
+For Gist Operations:
 
-- **create-gist.yml** - Creates a GitHub Gist from a markdown file
-- **comment-on-gist.yml** - Posts comments to existing GitHub Gists
-- **update-gist.yml** - Updates existing GitHub Gists
-- **create-gist-cross-repo.yml** - Creates gists from files in other repositories
+- gist - Create, read, update, and delete gists
 
-## Usage
+For Cross-Repo Operations (create-gist-cross-repo.yml):
 
-In your repository, create a workflow that calls these reusable workflows:
+- repo - Full control of private repositories (or public_repo for public repos
+only)
+  - Needed to checkout/read files from other repositories
 
-```yaml
-name: Create Gist
+How to Create the PAT:
 
-on:
-  workflow_dispatch:
-    inputs:
-      file_path:
-        description: 'Path to markdown file'
-        required: true
-        type: string
+1. Go to GitHub Settings > Developer settings > Personal access tokens > Tokens
+(classic)
+2. Click "Generate new token (classic)"
+3. Select scopes:
+  - ✅ gist - For all gist operations
+  - ✅ repo - If you need to access private repositories
+  - OR ✅ public_repo - If you only need to access public repositories
 
-jobs:
-  create:
-    uses: devinschumacher/workflows/.github/workflows/create-gist.yml@main
-    with:
-      file_path: ${{ github.event.inputs.file_path }}
-    secrets:
-      GH_PAT_PROFESSOR_SERP: ${{ secrets.GH_PAT_PROFESSOR_SERP }}
-```
+Summary:
 
+- Minimum for basic gist workflows: gist
+- For cross-repo workflow: gist + repo (or public_repo)
+- For commenting on issues/releases: Also needs repo to read issue/release content
+
+The PAT determines whose account the gists are created under - they'll appear in
+that user's gist list.
