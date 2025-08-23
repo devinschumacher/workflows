@@ -133,55 +133,43 @@ jobs:
           GIST_ID=$(echo "$RESPONSE" | jq -r '.id')
           echo "gist_id=$GIST_ID" >> $GITHUB_OUTPUT
 
-      - name: Update readme.json with gist URL
-        id: update_json
+      - name: Update LICENSE.md with gist URL
         shell: bash
         run: |
-          # Check if assets branch exists
-          if git ls-remote --heads origin assets | grep -q "refs/heads/assets"; then
-            echo "Assets branch exists, updating readme.json..."
-            
-            # Checkout assets branch
-            git fetch origin assets
-            git checkout assets
-            
-            # Check if readme.json exists
-            if [ -f "data/readme.json" ]; then
-              GIST_URL="${{ steps.create_gist.outputs.gist_url }}"
-              
-              # Update the github_gist_url field
-              jq --arg url "$GIST_URL" '.github_gist_url = $url' data/readme.json > tmp.json
-              mv tmp.json data/readme.json
-              
-              # Commit and push changes
-              git config --local user.email "action@github.com"
-              git config --local user.name "GitHub Action"
-              git add data/readme.json
-              git commit -m "Update readme.json with gist URL: $GIST_URL" || echo "No changes to commit"
-              git push origin assets || echo "Failed to push (might be no changes)"
-              
-              echo "✅ Updated readme.json with gist URL"
-              echo "updated=true" >> $GITHUB_OUTPUT
-            else
-              echo "⚠️ data/readme.json not found in assets branch"
-              echo "updated=false" >> $GITHUB_OUTPUT
-            fi
-          else
-            echo "⚠️ Assets branch does not exist"
-            echo "updated=false" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Trigger README regeneration
-        if: steps.update_json.outputs.updated == 'true'
-        env:
-          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
-        shell: bash
-        run: |
-          # Trigger the README generation workflow if readme.json was updated
-          curl -X POST \
-            -H "Authorization: Bearer $GITHUB_TOKEN" \
-            -H "Accept: application/vnd.github+json" \
-            https://api.github.com/repos/${{ github.repository }}/actions/workflows/call-generate-readme-from-json.yml/dispatches \
-            -d '{"ref":"main"}' || echo "⚠️ Could not trigger README generation (workflow might not exist)"
+          # Go back to main branch
+          git checkout main
           
-          echo "📝 Triggered README regeneration workflow"
+          # Check if LICENSE.md exists
+          if [ -f "LICENSE.md" ]; then
+            GIST_URL="${{ steps.create_gist.outputs.gist_url }}"
+            GIST_ID="${{ steps.create_gist.outputs.gist_id }}"
+            
+            # Read current LICENSE.md content
+            CURRENT_CONTENT=$(cat LICENSE.md)
+            
+            # Check if it already has a gist link
+            if echo "$CURRENT_CONTENT" | grep -q "Gist:"; then
+              # Update existing gist link
+              sed -i "s|Gist: .*|Gist: $GIST_URL|" LICENSE.md
+            else
+              # Add gist link after the first line
+              {
+                echo "$CURRENT_CONTENT" | head -1
+                echo ""
+                echo "Gist: $GIST_URL"
+                echo "$CURRENT_CONTENT" | tail -n +2
+              } > LICENSE.md.tmp
+              mv LICENSE.md.tmp LICENSE.md
+            fi
+            
+            # Commit and push changes
+            git config --local user.email "action@github.com"
+            git config --local user.name "GitHub Action"
+            git add LICENSE.md
+            git commit -m "Add gist link to LICENSE.md: $GIST_URL" || echo "No changes to commit"
+            git push origin main || echo "Failed to push (might be no changes)"
+            
+            echo "✅ Updated LICENSE.md with gist URL"
+          else
+            echo "⚠️ LICENSE.md not found"
+          fi
